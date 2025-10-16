@@ -1,0 +1,232 @@
+# ------------------------
+# Python / Deep Learning .gitignore
+# Generated: standard template for ML projects
+# ------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+*.egg-info/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+htmlcov/
+cover/
+coverage.xml
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+*.egg-info/
+
+# PyBuilder
+.pybuilder/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope
+.ropeproject
+
+# mkdocs documentation
+site/
+
+# mypy
+.mypy_cache/
+
+# Pyre type checker
+.pyre/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs and temp files
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+
+# -------- ML / Deep Learning specific --------
+
+# Model checkpoints / weights
+*.pt
+*.pth
+*.ckpt
+*.ckpt.*
+*.h5
+*.hdf5
+*.tflite
+*.pb
+*.onnx
+
+# TensorFlow SavedModel directory
+saved_model/
+saved_model.pb
+variables/
+assets/
+
+# PyTorch Lightning
+lightning_logs/
+checkpoints/
+
+# TensorBoard
+runs/
+events.out.tfevents.*
+
+# Weights & Biases
+wandb/
+
+# MLflow
+mlruns/
+
+# Neptune
+.neptune/
+
+# DVC
+.dvc/
+.dvcignore
+
+# Datasets and large files
+data/
+datasets/
+raw_data/
+processed_data/
+*.npz
+*.npy
+*.npz
+*.csv
+*.tar.gz
+*.zip
+
+# Cache for data loaders / preprocessing
+cache/
+dataset_cache/
+
+# Checkpoints and exported artifacts
+export/
+artifacts/
+
+# Serialization
+*.pkl
+*.joblib
+
+# Model conversion outputs
+converted_model/
+
+# GPU / compiled artifacts
+*.so
+*.dylib
+
+# Environment and secrets
+.env
+.env.*
+env_vars/
+credentials/
+secrets/
+
+# SSH keys
+id_rsa
+id_rsa.pub
+
+# Conda
+envs/
+conda-meta/
+*.conda
+*.ipynb
+
+# Notebook checkpoints and outputs (sometimes large)
+notebooks/output/
+notebooks/checkpoints/
+
+# Ignore large experiment result folders
+experiments/
+results/
+
+# Profiling
+profiler/
+
+# VS Code workspace storage and history
+.vscode/*history*
+
+# End of file
+
