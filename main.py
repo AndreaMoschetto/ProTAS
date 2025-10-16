@@ -29,6 +29,7 @@ parser.add_argument('--learnable_graph', action='store_true', help="Use learnabl
 parser.add_argument('--lr', default=0.0005, type=float, help="Learning rate")
 parser.add_argument('--progress_lw', default=1.0, type=float, help="Loss weight for progress prediction")
 parser.add_argument('--graph_lw', default=0.1, type=float, help="Loss weight for graph prediction")
+parser.add_argument('--mini', action='store_true', help="Use mini dataset for quick testing")
 
 args = parser.parse_args()
 
@@ -49,8 +50,8 @@ if args.dataset == "50salads":
     sample_rate = 2
 
 # File paths
-vid_list_file = f"./data/{args.dataset}/splits/train.split{args.split}.bundle"
-vid_list_file_tst = f"./data/{args.dataset}/splits/test.split{args.split}.bundle"
+vid_list_file = f"./data/{args.dataset}/splits/train{('_mini' if args.mini else '')}.split{args.split}.bundle"
+vid_list_file_tst = f"./data/{args.dataset}/splits/test{('_mini' if args.mini else '')}.split{args.split}.bundle"
 features_path = f"./data/{args.dataset}/features/"
 gt_path = f"./data/{args.dataset}/groundTruth/"
 progress_path = f"./data/{args.dataset}/progress/"
@@ -103,10 +104,10 @@ if args.action == "train":
     batch_gen.read_data(vid_list_file)
     trainer.train(model_dir, batch_gen, num_epochs=num_epochs, batch_size=bz, learning_rate=lr, device=device)
     trainer.predict(model_dir, results_dir, features_path, vid_list_file_tst, num_epochs, actions_dict, device, sample_rate, feature_transpose, map_delimiter)
-    evaluate(args.dataset, results_dir, args.split, args.exp_id, args.num_epochs)
+    evaluate(args.dataset, results_dir, args.split, args.exp_id, args.num_epochs, mini=args.mini)
 elif args.action == 'predict':
     trainer.predict(model_dir, results_dir, features_path, vid_list_file_tst, num_epochs, actions_dict, device, sample_rate, feature_transpose, map_delimiter)
-    evaluate(args.dataset, results_dir, args.split, args.exp_id, args.num_epochs)
+    evaluate(args.dataset, results_dir, args.split, args.exp_id, args.num_epochs, mini=args.mini)
 elif args.action == "predict_online":
     trainer.predict_online(model_dir, results_dir, features_path, vid_list_file_tst, num_epochs, actions_dict, device, sample_rate, feature_transpose, map_delimiter)
-    evaluate(args.dataset, results_dir, args.split, args.exp_id, args.num_epochs)
+    evaluate(args.dataset, results_dir, args.split, args.exp_id, args.num_epochs, mini=args.mini)

@@ -98,10 +98,10 @@ def f_score(recognized, ground_truth, overlap, bg_class=["background"]):
     return float(tp), float(fp), float(fn)
 
 
-def evaluate(dataset, result_dir, split, exp_id, num_epochs):
+def evaluate(dataset, result_dir, split, exp_id, num_epochs, mini: bool = False):
     ground_truth_path = "./data/"+dataset+"/groundTruth/"
     recog_path = result_dir #"./results/"+exp_id+"/"+dataset+"/epoch"+str(num_epochs)+"/split_"+split+"/"
-    file_list = "./data/"+dataset+"/splits/test.split"+split+".bundle"
+    file_list = "./data/"+dataset+"/splits/test" + ("_mini" if mini else "") + ".split"+split+".bundle"
 
     list_of_videos = read_file(file_list).split('\n')[:-1]
 
