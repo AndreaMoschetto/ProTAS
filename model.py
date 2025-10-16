@@ -6,6 +6,7 @@ import copy
 import numpy as np
 import tqdm
 import pickle
+from torch.utils.tensorboard import SummaryWriter
 
 # Define the MultiStageModel class
 class MultiStageModel(nn.Module):
@@ -127,7 +128,7 @@ class DilatedResidualLayer(nn.Module):
 
 # Define the Trainer class
 class Trainer:
-    def __init__(self, num_blocks, num_layers, num_f_maps, dim, num_classes, causal, logger, progress_lw=1,
+    def __init__(self, num_blocks, num_layers, num_f_maps, dim, num_classes, causal, writer, progress_lw=1,
                  use_graph=True, graph_lw=0.1, init_graph_path='', learnable=True):
         self.model = MultiStageModel(num_blocks, num_layers, num_f_maps, dim, num_classes, causal, 
                      use_graph=use_graph, init_graph_path=init_graph_path, learnable=learnable)
@@ -137,7 +138,7 @@ class Trainer:
         self.progress_lw = progress_lw
         self.use_graph = use_graph
         self.graph_lw = graph_lw
-        self.logger = logger
+        self.writer: SummaryWriter = writer
 
     def train(self, save_dir, batch_gen, num_epochs, batch_size, learning_rate, device):
         self.model.train()
@@ -177,14 +178,13 @@ class Trainer:
                 total += torch.sum(mask[:, 0, :]).item()
 
             batch_gen.reset()
-            if (epoch + 1) % 5 == 0:
+            if (epoch + 1) % 5 == 0 or epoch == num_epochs - 1:
                 torch.save(self.model.state_dict(), save_dir + "/epoch-" + str(epoch + 1) + ".model")
                 torch.save(optimizer.state_dict(), save_dir + "/epoch-" + str(epoch + 1) + ".opt")
-            self.logger.info("[epoch %d]: epoch loss = %f, progress loss = %f, graph loss = %f, acc = %f" % (epoch + 1, 
-                                                              epoch_loss / len(batch_gen.list_of_examples),
-                                                              epoch_progress_loss / len(batch_gen.list_of_examples),
-                                                              epoch_graph_loss / len(batch_gen.list_of_examples),
-                                                              float(correct)/total))
+            self.writer.add_scalar('Loss/total', epoch_loss / len(batch_gen.list_of_examples), epoch + 1)
+            self.writer.add_scalar('Loss/progress', epoch_progress_loss / len(batch_gen.list_of_examples), epoch + 1)
+            self.writer.add_scalar('Loss/graph', epoch_graph_loss / len(batch_gen.list_of_examples), epoch + 1)
+            self.writer.add_scalar('Accuracy/train', float(correct) / total, epoch + 1)
 
     def predict(self, model_dir, results_dir, features_path, vid_list_file, epoch, actions_dict, device, sample_rate, feature_transpose=False, map_delimiter=' '):
         self.model.eval()

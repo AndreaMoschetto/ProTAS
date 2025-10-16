@@ -7,6 +7,7 @@ import random
 from eval import evaluate
 import logging
 from datetime import datetime
+from torch.utils.tensorboard import SummaryWriter
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 seed = 1538574472
@@ -64,19 +65,11 @@ results_dir = f"./results/{args.exp_id}/{args.dataset}/epoch{num_epochs}/split_{
 os.makedirs(model_dir, exist_ok=True)
 os.makedirs(results_dir, exist_ok=True)
 
-# Logger setup
-logger = logging.getLogger('MSTCN')
-current_time = datetime.now()
-log_filename = current_time.strftime("%Y-%m-%d_%H-%M-%S.log")
-logging.basicConfig(
-    level=logging.DEBUG,  # Capture all levels of logging
-    filename=os.path.join(model_dir, log_filename),   # Name of the log file
-    filemode='w',         # 'w' for overwrite each time; use 'a' to append
-    format='%(asctime)s - %(levelname)s - %(message)s'  # Include timestamp, log level, and log message
-)
-ch = logging.StreamHandler()
-logger.addHandler(ch)
-logger.info(args)
+# TensorBoard setup
+current_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = os.path.join('runs', f"{args.exp_id}_{args.dataset}_split{args.split}_{current_time}")
+writer = SummaryWriter(log_dir=log_dir)
+print(f"TensorBoard log directory: {log_dir}")
 
 # Read action mapping file
 with open(mapping_file, 'r') as file_ptr:
@@ -93,7 +86,7 @@ num_classes = len(actions_dict)
 # Initialize trainer
 trainer = Trainer(
     num_stages, num_layers, num_f_maps, features_dim, num_classes, 
-    causal=args.causal, logger=logger, progress_lw=args.progress_lw, 
+    causal=args.causal, writer=writer, progress_lw=args.progress_lw, 
     use_graph=args.graph, graph_lw=args.graph_lw, init_graph_path=graph_path, 
     learnable=args.learnable_graph
 )
