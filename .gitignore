@@ -229,5 +229,8 @@ profiler/
 # VS Code workspace storage and history
 .vscode/*history*
 
+# Shell scripts
+*.sh
+
 # End of file
 
