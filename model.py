@@ -8,12 +8,13 @@ import tqdm
 import pickle
 from torch.utils.tensorboard import SummaryWriter
 
+
 # Define the MultiStageModel class
 class MultiStageModel(nn.Module):
     def __init__(self, num_stages, num_layers, num_f_maps, dim, num_classes, causal=False, use_graph=True, **graph_args):
         super(MultiStageModel, self).__init__()
         self.stage1 = SingleStageModel(num_layers, num_f_maps, dim, num_classes, causal)
-        self.stages = nn.ModuleList([copy.deepcopy(SingleStageModel(num_layers, num_f_maps, num_classes, num_classes, causal)) for s in range(num_stages-1)])
+        self.stages = nn.ModuleList([copy.deepcopy(SingleStageModel(num_layers, num_f_maps, num_classes, num_classes, causal)) for s in range(num_stages - 1)])
         self.use_graph = use_graph
         if use_graph:
             self.graph_learner = TaskGraphLearner(**graph_args)
@@ -28,20 +29,22 @@ class MultiStageModel(nn.Module):
             outputs_app = torch.cat((outputs_app, out_app.unsqueeze(0)), dim=0)
         return outputs, outputs_app
 
+
 # Define the ProbabilityProgressFusionModel class
 class ProbabilityProgressFusionModel(nn.Module):
     def __init__(self, num_classes):
         super(ProbabilityProgressFusionModel, self).__init__()
         self.num_classes = num_classes
-        self.conv = nn.Conv1d(num_classes*2, num_classes, 1)
+        self.conv = nn.Conv1d(num_classes * 2, num_classes, 1)
 
     def forward(self, in_cls, in_prg):
-        ### in_cls: batch_size x num_classes x T
-        ### in_prg: batch_size x num_classes x T
+        # in_cls: batch_size x num_classes x T
+        # in_prg: batch_size x num_classes x T
         # Concatenate classification and progress inputs
         input_concat = torch.cat((in_cls, in_prg), dim=1)
         out = self.conv(input_concat)
         return out
+
 
 # Define the TaskGraphLearner class
 class TaskGraphLearner(nn.Module):
@@ -72,13 +75,14 @@ class TaskGraphLearner(nn.Module):
         return graph_loss
 
     def inference(self, cls, prg):
-        action_prob = F.softmax(cls, dim=1)
+        # action_prob = F.softmax(cls, dim=1)
         prg = torch.clamp(prg, min=0, max=1)
         completion_status, _ = torch.cummax(prg, dim=-1)
         alpha_pre = torch.einsum('bkt,kK->bKt', 1 - completion_status, self.matrix_pre)
         alpha_suc = torch.einsum('bkt,kK->bKt', completion_status, self.matrix_suc)
         logits = cls - self.eta * (alpha_pre + alpha_suc)
         return logits
+
 
 # Define the SingleStageModel class
 class SingleStageModel(nn.Module):
@@ -87,7 +91,7 @@ class SingleStageModel(nn.Module):
         self.conv_1x1 = nn.Conv1d(dim, num_f_maps, 1)
         self.layers = nn.ModuleList([copy.deepcopy(DilatedResidualLayer(2 ** i, num_f_maps, num_f_maps, causal=causal)) for i in range(num_layers)])
         self.conv_out = nn.Conv1d(num_f_maps, num_classes, 1)
-        ### Action Progress Prediction (APP) module
+        # Action Progress Prediction (APP) module
         self.gru_app = nn.GRU(num_f_maps, num_f_maps, num_layers=1, batch_first=True, bidirectional=not causal)
         self.conv_app = nn.Conv1d(num_f_maps * (2 if not causal else 1), num_classes, 1)
         self.prob_fusion = ProbabilityProgressFusionModel(num_classes)
@@ -104,15 +108,16 @@ class SingleStageModel(nn.Module):
         out = out * mask[:, 0:1, :]
         return out, progress_out
 
+
 # Define the DilatedResidualLayer class
 class DilatedResidualLayer(nn.Module):
     def __init__(self, dilation, in_channels, out_channels, filter_size=3, causal=False):
         super(DilatedResidualLayer, self).__init__()
         self.causal = causal
         self.dilation = dilation
-        padding = int(dilation * (filter_size-1) / 2)
+        padding = int(dilation * (filter_size - 1) / 2)
         if causal:
-            self.conv_dilated = nn.Conv1d(in_channels, out_channels, filter_size, padding=padding*2, padding_mode='replicate', dilation=dilation)
+            self.conv_dilated = nn.Conv1d(in_channels, out_channels, filter_size, padding=padding * 2, padding_mode='replicate', dilation=dilation)
         else:
             self.conv_dilated = nn.Conv1d(in_channels, out_channels, filter_size, padding=padding, dilation=dilation)
         self.conv_1x1 = nn.Conv1d(out_channels, out_channels, 1)
@@ -121,17 +126,22 @@ class DilatedResidualLayer(nn.Module):
     def forward(self, x, mask):
         out = F.relu(self.conv_dilated(x))
         if self.causal:
-            out = out[..., :-self.dilation*2]
+            out = out[..., :-self.dilation * 2]
         out = self.conv_1x1(out)
         out = self.dropout(out)
         return (x + out) * mask[:, 0:1, :]
 
+
 # Define the Trainer class
 class Trainer:
-    def __init__(self, num_blocks, num_layers, num_f_maps, dim, num_classes, causal, writer, progress_lw=1,
-                 use_graph=True, graph_lw=0.1, init_graph_path='', learnable=True):
-        self.model = MultiStageModel(num_blocks, num_layers, num_f_maps, dim, num_classes, causal, 
-                     use_graph=use_graph, init_graph_path=init_graph_path, learnable=learnable)
+    def __init__(
+        self, num_blocks, num_layers, num_f_maps, dim, num_classes, causal, writer, progress_lw=1,
+        use_graph=True, graph_lw=0.1, init_graph_path='', learnable=True
+    ):
+        self.model = MultiStageModel(
+            num_blocks, num_layers, num_f_maps, dim, num_classes, causal, use_graph=use_graph,
+            init_graph_path=init_graph_path, learnable=learnable
+        )
         self.ce = nn.CrossEntropyLoss(ignore_index=-100)
         self.mse = nn.MSELoss(reduction='none')
         self.num_classes = num_classes
@@ -213,7 +223,7 @@ class Trainer:
                 predicted = predicted.squeeze()
                 recognition = []
                 for i in range(len(predicted)):
-                    recognition = np.concatenate((recognition, [list(actions_dict.keys())[list(actions_dict.values()).index(predicted[i].item())]]*sample_rate))
+                    recognition = np.concatenate((recognition, [list(actions_dict.keys())[list(actions_dict.values()).index(predicted[i].item())]] * sample_rate))
                 f_name = vid.split('/')[-1].split('.')[0]
                 f_ptr = open(results_dir + "/" + f_name, "w")
                 f_ptr.write("### Frame level recognition: ###\n")
@@ -239,12 +249,12 @@ class Trainer:
                 n_frames = input_x.shape[-1]
                 recognition = []
                 for frame_i in tqdm.tqdm(range(n_frames)):
-                    curr_input_x = input_x[:, :, :frame_i+1]
+                    curr_input_x = input_x[:, :, :frame_i + 1]
                     predictions, progress_predictions = self.model(curr_input_x, torch.ones(curr_input_x.size(), device=device))
                     final_predictions = self.model.graph_learner.inference(predictions[-1], progress_predictions[-1])
                     _, predicted = torch.max(final_predictions.data, 1)
                     predicted = predicted.squeeze(0)
-                    recognition = np.concatenate((recognition, [list(actions_dict.keys())[list(actions_dict.values()).index(predicted[-1].item())]]*sample_rate))
+                    recognition = np.concatenate((recognition, [list(actions_dict.keys())[list(actions_dict.values()).index(predicted[-1].item())]] * sample_rate))
                 f_name = vid.split('/')[-1].split('.')[0]
                 f_ptr = open(results_dir + "/" + f_name, "w")
                 f_ptr.write("### Frame level recognition: ###\n")

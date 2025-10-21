@@ -5,7 +5,6 @@ import os
 import argparse
 import random
 from eval import evaluate
-import logging
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter
 
@@ -41,7 +40,7 @@ num_layers = 10
 num_f_maps = 64
 features_dim = 2048
 bz = args.batch_size
-lr = args.lr 
+lr = args.lr
 num_epochs = args.num_epochs
 
 # use the full temporal resolution @ 15fps
@@ -86,9 +85,9 @@ num_classes = len(actions_dict)
 
 # Initialize trainer
 trainer = Trainer(
-    num_stages, num_layers, num_f_maps, features_dim, num_classes, 
-    causal=args.causal, writer=writer, progress_lw=args.progress_lw, 
-    use_graph=args.graph, graph_lw=args.graph_lw, init_graph_path=graph_path, 
+    num_stages, num_layers, num_f_maps, features_dim, num_classes,
+    causal=args.causal, writer=writer, progress_lw=args.progress_lw,
+    use_graph=args.graph, graph_lw=args.graph_lw, init_graph_path=graph_path,
     learnable=args.learnable_graph
 )
 
