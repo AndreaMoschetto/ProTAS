@@ -153,7 +153,7 @@ def evaluate(dataset, result_dir, split, exp_id, num_epochs, mini: bool = False)
         precision = tp[s] / float(tp[s]+fp[s])
         recall = tp[s] / float(tp[s]+fn[s])
     
-        f1 = 2.0 * (precision*recall) / (precision+recall)
+        f1 = 0.0 if (precision + recall) == 0 else 2.0 * (precision * recall) / (precision + recall)
 
         f1 = np.nan_to_num(f1)*100
         #print('F1@%0.2f: %.4f' % (overlap[s], f1))
