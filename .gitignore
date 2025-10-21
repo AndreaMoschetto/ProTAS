@@ -144,6 +144,7 @@ saved_model/
 saved_model.pb
 variables/
 assets/
+models/
 
 # PyTorch Lightning
 lightning_logs/
