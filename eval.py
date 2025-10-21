@@ -64,8 +64,8 @@ def levenstein(p, y, norm=False):
 
 def edit_score(recognized, ground_truth, norm=True, bg_class=["background"]):
     # modified edit_score to remove consecutive duplicates after filtering out background
-    recognized_no_bg = [a for a in recognized if not a in bg_class]
-    ground_truth_no_bg = [a for a in ground_truth if not a in bg_class]
+    recognized_no_bg = [a for a in recognized if a not in bg_class]
+    ground_truth_no_bg = [a for a in ground_truth if a not in bg_class]
     P = [k for k, g in groupby(recognized_no_bg)]
     Y = [k for k, g in groupby(ground_truth_no_bg)]
     #P, _, _ = get_labels_start_end_time(recognized, bg_class)
