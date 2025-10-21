@@ -98,7 +98,7 @@ def f_score(recognized, ground_truth, overlap, bg_class=["background"]):
     return float(tp), float(fp), float(fn)
 
 
-def evaluate(dataset, result_dir, split, exp_id, num_epochs, mini: bool = False):
+def evaluate(dataset, result_dir, split, exp_id, num_epochs, mini: bool = False, verbose: bool = False):
     ground_truth_path = "./data/"+dataset+"/groundTruth/"
     recog_path = result_dir #"./results/"+exp_id+"/"+dataset+"/epoch"+str(num_epochs)+"/split_"+split+"/"
     file_list = "./data/"+dataset+"/splits/test" + ("_mini" if mini else "") + ".split"+split+".bundle"
@@ -158,7 +158,8 @@ def evaluate(dataset, result_dir, split, exp_id, num_epochs, mini: bool = False)
         f1 = np.nan_to_num(f1)*100
         #print('F1@%0.2f: %.4f' % (overlap[s], f1))
         res_list.append(f1)
-    print(exp_id, ' '.join(['{:.2f}'.format(r) for r in res_list]))
+    if verbose:
+        print(exp_id, ' '.join(['{:.2f}'.format(r) for r in res_list]))
     result_metrics = {'Acc': acc,  'Acc-bg': acc_wo_bg, 'Edit': edit, 
                     'F1@10': res_list[-3], 'F1@25': res_list[-2], 'F1@50': res_list[-1]}
     result_path = os.path.join(recog_path, 'split'+split+'.eval.json')

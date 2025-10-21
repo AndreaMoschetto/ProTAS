@@ -140,9 +140,11 @@ class Trainer:
         self.graph_lw = graph_lw
         self.writer: SummaryWriter = writer
 
-    def train(self, save_dir, batch_gen, num_epochs, batch_size, learning_rate, device):
+    def train(self, save_dir, batch_gen, num_epochs, batch_size, learning_rate, device, verbose=False):
         self.model.train()
         self.model.to(device)
+        if verbose:
+            print(f'Device: {device}\nTraining started with {num_epochs} epochs...')
         optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
         for epoch in range(num_epochs):
             epoch_loss = 0
@@ -185,6 +187,8 @@ class Trainer:
             self.writer.add_scalar('Loss/progress', epoch_progress_loss / len(batch_gen.list_of_examples), epoch + 1)
             self.writer.add_scalar('Loss/graph', epoch_graph_loss / len(batch_gen.list_of_examples), epoch + 1)
             self.writer.add_scalar('Accuracy/train', float(correct) / total, epoch + 1)
+            if verbose:
+                print(f"Epoch [{epoch + 1}/{num_epochs}] Loss: {epoch_loss / len(batch_gen.list_of_examples):.4f}, Progress Loss: {epoch_progress_loss / len(batch_gen.list_of_examples):.4f}, Graph Loss: {epoch_graph_loss / len(batch_gen.list_of_examples):.4f}, Accuracy: {float(correct) / total:.4f}")
 
     def predict(self, model_dir, results_dir, features_path, vid_list_file, epoch, actions_dict, device, sample_rate, feature_transpose=False, map_delimiter=' '):
         self.model.eval()
