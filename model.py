@@ -178,9 +178,10 @@ class Trainer:
                 loss += self.progress_lw * progress_loss
                 epoch_progress_loss += self.progress_lw * progress_loss.item()
 
-                graph_loss = self.model.graph_learner(predictions[-1], progress_predictions[-1])
-                loss += self.graph_lw * graph_loss
-                epoch_graph_loss += self.graph_lw * graph_loss.item()
+                if self.use_graph:
+                    graph_loss = self.model.graph_learner(predictions[-1], progress_predictions[-1])
+                    loss += self.graph_lw * graph_loss
+                    epoch_graph_loss += self.graph_lw * graph_loss.item()
                 epoch_loss += loss.item()
                 loss.backward()
                 optimizer.step()
@@ -217,7 +218,11 @@ class Trainer:
                 input_x.unsqueeze_(0)
                 input_x = input_x.to(device)
                 predictions, progress_predictions = self.model(input_x, torch.ones(input_x.size(), device=device))
-                final_predictions = self.model.graph_learner.inference(predictions[-1], progress_predictions[-1])
+
+                if self.use_graph:
+                    final_predictions = self.model.graph_learner.inference(predictions[-1], progress_predictions[-1])
+                else:
+                    final_predictions = predictions[-1]
                 _, predicted = torch.max(final_predictions.data, 1)
 
                 predicted = predicted.squeeze()
@@ -251,7 +256,10 @@ class Trainer:
                 for frame_i in tqdm.tqdm(range(n_frames)):
                     curr_input_x = input_x[:, :, :frame_i + 1]
                     predictions, progress_predictions = self.model(curr_input_x, torch.ones(curr_input_x.size(), device=device))
-                    final_predictions = self.model.graph_learner.inference(predictions[-1], progress_predictions[-1])
+                    if self.use_graph:
+                        final_predictions = self.model.graph_learner.inference(predictions[-1], progress_predictions[-1])
+                    else:
+                        final_predictions = predictions[-1]
                     _, predicted = torch.max(final_predictions.data, 1)
                     predicted = predicted.squeeze(0)
                     recognition = np.concatenate((recognition, [list(actions_dict.keys())[list(actions_dict.values()).index(predicted[-1].item())]] * sample_rate))
